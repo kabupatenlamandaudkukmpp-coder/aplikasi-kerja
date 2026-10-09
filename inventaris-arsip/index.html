@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Inventaris Arsip</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f6f7f9;--card:#fff;--tx:#1d2733;--mut:#667085;--bd:#dde1e7;--ac:#1f5fbf;--acx:#fff;--ok:#157f3b;--warn:#b54708;--bad:#b42318}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12161c;--card:#1b212a;--tx:#e6e9ee;--mut:#98a2b3;--bd:#2c3542;--ac:#5b9bff;--acx:#0b1220;--ok:#4cc27a;--warn:#f2a65a;--bad:#ff7b72}}
+:root[data-theme="dark"]{--bg:#12161c;--card:#1b212a;--tx:#e6e9ee;--mut:#98a2b3;--bd:#2c3542;--ac:#5b9bff;--acx:#0b1220;--ok:#4cc27a;--warn:#f2a65a;--bad:#ff7b72}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*:before,*:after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:1100px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:0}.sub{color:var(--mut);font-size:13px;margin:2px 0 14px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px}
+.stat b{display:block;font-size:22px}.stat span{color:var(--mut);font-size:12px}
+form{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:14px}
+label{display:flex;flex-direction:column;font-size:12px;color:var(--mut);gap:3px}
+label.w{grid-column:1/-1}
+input,select,textarea,button{font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px}
+button{cursor:pointer;background:var(--card)}button.p{background:var(--ac);color:var(--acx);border-color:var(--ac)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row input,.row select{flex:1;min-width:140px}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:8px;border-bottom:1px solid var(--bd);vertical-align:top;white-space:nowrap}
+td.u{white-space:normal;min-width:220px}th{color:var(--mut);font-weight:600}
+.b{padding:2px 8px;border-radius:99px;font-size:12px;border:1px solid currentColor}
+.Baik{color:var(--ok)}.Rusak\ Ringan{color:var(--warn)}.Rusak\ Berat{color:var(--bad)}
+.empty{text-align:center;color:var(--mut);padding:24px}
+td button{padding:3px 8px;font-size:12px}
+@media print{form,.row,.noprint,td:last-child,th:last-child{display:none!important}body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+<main>
+<h1>Inventaris Arsip</h1>
+<p class="sub">Pencatatan, pencarian, dan ekspor daftar arsip. Data tersimpan di browser ini; ekspor CSV untuk cadangan.</p>
+
+<div class="stats">
+<div class="card stat"><b id="sT">0</b><span>Total berkas</span></div>
+<div class="card stat"><b id="sJ">0</b><span>Total jumlah arsip</span></div>
+<div class="card stat"><b id="sB">0</b><span>Kondisi baik</span></div>
+<div class="card stat"><b id="sR">0</b><span>Perlu perbaikan</span></div>
+</div>
+
+<form id="f" class="card">
+<label>Kode Klasifikasi<input name="kode" placeholder="[mis. 518.1]" required></label>
+<label>Nomor Berkas<input name="nomor" placeholder="[mis. 001/2024]" required></label>
+<label>Tahun<input name="tahun" type="number" min="1900" max="2100" required></label>
+<label>Tingkat Perkembangan<select name="tingkat"><option>Asli</option><option>Salinan</option><option>Tembusan</option><option>Fotokopi</option></select></label>
+<label>Jumlah<input name="jumlah" type="number" min="1" value="1" required></label>
+<label>Satuan<select name="satuan"><option>Lembar</option><option>Berkas</option><option>Bundel</option><option>Buku</option><option>Map</option><option>File</option></select></label>
+<label>Media<select name="media"><option>Kertas</option><option>Digital</option><option>Kertas &amp; Digital</option></select></label>
+<label>Kondisi Fisik<select name="kondisi"><option>Baik</option><option>Rusak Ringan</option><option>Rusak Berat</option></select></label>
+<label>Lokasi Simpan<input name="lokasi" placeholder="[mis. Lemari 2 / Rak B / Boks 5]" required></label>
+<label>Retensi (tahun)<input name="retensi" type="number" min="0" placeholder="[mis. 10]"></label>
+<label>Nasib Akhir<select name="nasib"><option>Musnah</option><option>Permanen</option><option>Dinilai Kembali</option></select></label>
+<label class="w">Uraian Informasi<textarea name="uraian" rows="2" placeholder="[uraian singkat isi berkas]" required></textarea></label>
+<div class="row w" style="grid-column:1/-1">
+<button class="p" id="sv" type="submit">Simpan Arsip</button>
+<button type="button" id="rs">Batal / Reset</button>
+</div>
+</form>
+
+<div class="row noprint" style="margin-bottom:10px">
+<input id="q" placeholder="Cari kode, nomor, uraian, lokasi...">
+<select id="fk"><option value="">Semua kondisi</option><option>Baik</option><option>Rusak Ringan</option><option>Rusak Berat</option></select>
+<select id="ft"><option value="">Semua tahun</option></select>
+<button id="ex">Ekspor CSV</button>
+<button id="pr">Cetak</button>
+</div>
+
+<p class="sub" id="fbh" style="display:none">Unduhan otomatis tidak tersedia. Salin teks di bawah ke Notepad, lalu simpan sebagai inventaris-arsip.csv (encoding UTF-8).</p><textarea id="fb" readonly rows="6" style="display:none;width:100%;margin-bottom:10px"></textarea>
+<div class="card tw"><table>
+<thead><tr><th>No</th><th>Kode</th><th>Nomor Berkas</th><th>Uraian Informasi</th><th>Tahun</th><th>Tingkat</th><th>Jumlah</th><th>Media</th><th>Kondisi</th><th>Lokasi</th><th>Retensi</th><th>Nasib Akhir</th><th>Aksi</th></tr></thead>
+<tbody id="tb"></tbody></table></div>
+</main>
+<script>
+var KEY="arsip-v1",data=[],editId=null;
+try{data=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){data=[]}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+var f=document.getElementById("f"),tb=document.getElementById("tb");
+function filtered(){
+ var q=document.getElementById("q").value.toLowerCase(),k=document.getElementById("fk").value,t=document.getElementById("ft").value;
+ return data.filter(function(d){
+  if(k&&d.kondisi!==k)return false;if(t&&String(d.tahun)!==t)return false;
+  return !q||[d.kode,d.nomor,d.uraian,d.lokasi].join(" ").toLowerCase().indexOf(q)>-1});
+}
+function render(){
+ var yrs=Array.from(new Set(data.map(function(d){return d.tahun}))).sort(function(a,b){return b-a});
+ var ft=document.getElementById("ft"),cur=ft.value;
+ ft.innerHTML='<option value="">Semua tahun</option>'+yrs.map(function(y){return'<option'+(String(y)===cur?" selected":"")+'>'+y+'</option>'}).join("");
+ var rows=filtered();
+ tb.innerHTML=rows.length?rows.map(function(d,i){return'<tr><td>'+(i+1)+'</td><td>'+esc(d.kode)+'</td><td>'+esc(d.nomor)+'</td><td class="u">'+esc(d.uraian)+'</td><td>'+esc(d.tahun)+'</td><td>'+esc(d.tingkat)+'</td><td>'+esc(d.jumlah)+' '+esc(d.satuan)+'</td><td>'+esc(d.media)+'</td><td><span class="b '+esc(d.kondisi)+'">'+esc(d.kondisi)+'</span></td><td>'+esc(d.lokasi)+'</td><td>'+esc(d.retensi||"-")+'</td><td>'+esc(d.nasib)+'</td><td><button data-e="'+d.id+'">Ubah</button> <button data-d="'+d.id+'">Hapus</button></td></tr>'}).join(""):'<tr><td colspan="13" class="empty">Belum ada data arsip.</td></tr>';
+ document.getElementById("sT").textContent=data.length;
+ document.getElementById("sJ").textContent=data.reduce(function(a,d){return a+(+d.jumlah||0)},0);
+ document.getElementById("sB").textContent=data.filter(function(d){return d.kondisi==="Baik"}).length;
+ document.getElementById("sR").textContent=data.filter(function(d){return d.kondisi!=="Baik"}).length;
+}
+f.addEventListener("submit",function(e){
+ e.preventDefault();var o={};new FormData(f).forEach(function(v,k){o[k]=v});
+ if(editId){data=data.map(function(d){return d.id===editId?Object.assign({id:editId},o):d})}
+ else{o.id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);data.push(o)}
+ save();resetForm();render();
+});
+function resetForm(){f.reset();editId=null;document.getElementById("sv").textContent="Simpan Arsip"}
+document.getElementById("rs").onclick=resetForm;
+tb.addEventListener("click",function(e){
+ var id=e.target.getAttribute("data-d");
+ if(id){if(confirm("Hapus arsip ini dari daftar?")){data=data.filter(function(d){return d.id!==id});save();render()}return}
+ id=e.target.getAttribute("data-e");
+ if(id){var d=data.find(function(x){return x.id===id});if(!d)return;
+  Object.keys(d).forEach(function(k){if(f.elements[k])f.elements[k].value=d[k]});
+  editId=id;document.getElementById("sv").textContent="Perbarui Arsip";f.scrollIntoView({behavior:"smooth"})}
+});
+["q","fk","ft"].forEach(function(i){document.getElementById(i).addEventListener("input",render)});
+document.getElementById("pr").onclick=function(){window.print()};
+document.getElementById("ex").onclick=async function(){
+ var h=["No","Kode Klasifikasi","Nomor Berkas","Uraian Informasi","Tahun","Tingkat Perkembangan","Jumlah","Satuan","Media","Kondisi Fisik","Lokasi Simpan","Retensi (tahun)","Nasib Akhir"];
+ var rows=filtered().map(function(d,i){return[i+1,d.kode,d.nomor,d.uraian,d.tahun,d.tingkat,d.jumlah,d.satuan,d.media,d.kondisi,d.lokasi,d.retensi,d.nasib]});
+ var csv="\ufeff"+[h].concat(rows).map(function(r){return r.map(function(c){return'"'+String(c==null?"":c).replace(/"/g,'""')+'"'}).join(",")}).join("\r\n");
+ try{if(!window.claude){var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));a.download="inventaris-arsip.csv";document.body.appendChild(a);a.click();a.remove();return}var dl=await claude.use("downloads");if(!dl)throw{code:"unavailable"};await dl.save({filename:"inventaris-arsip.csv",data:csv})}catch(e){if(!e||e.code!=="declined"){document.getElementById("fbh").style.display="block";var t=document.getElementById("fb");t.style.display="block";t.value=csv;t.focus();t.select()}}
+};
+render();
+</script>
+</body>
+</html>
